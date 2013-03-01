@@ -1,12 +1,11 @@
 package main
 
+import "strconv"
+
 type registers struct {
 	names    map[string]*int32
 	integer  [32]int32
 	floating [32]float32
-	extra    struct {
-		hi, lo, pc int32
-	}
 }
 
 var Registers registers
@@ -22,8 +21,6 @@ func init() {
 	}
 	for i := 0; i < len(names); i++ {
 		Registers.names[names[i]] = &Registers.integer[i]
+		Registers.names[strconv.Itoa(i)] = &Registers.integer[i]
 	}
-	Registers.names["hi"] = &Registers.extra.hi
-	Registers.names["lo"] = &Registers.extra.lo
-	Registers.names["pc"] = &Registers.extra.pc
 }
