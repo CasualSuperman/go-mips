@@ -1,6 +1,7 @@
 package main
 
 var CPU struct {
+	registers
 	memory struct {
 		hi, lo []byte
 	}
