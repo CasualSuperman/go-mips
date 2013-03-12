@@ -1,4 +1,4 @@
-package main
+package cpu
 
 import "strconv"
 
@@ -8,19 +8,25 @@ type registers struct {
 	floating [32]float32
 }
 
-var Registers registers
-
 type instruction func(*registers)
 
-func init() {
-	Registers.names = make(map[string]*int32)
+func newRegisters() (r registers) {
+	r.names = make(map[string]*int32)
 	var names = [32]string{
 		"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2",
 		"t3", "t4", "t5", "t6", "t7", "s0", "s1", "s2", "s3", "s4", "s5", "s6",
 		"s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra",
 	}
 	for i := 0; i < len(names); i++ {
-		Registers.names[names[i]] = &Registers.integer[i]
-		Registers.names[strconv.Itoa(i)] = &Registers.integer[i]
+		r.names[names[i]] = &r.integer[i]
+		r.names[strconv.Itoa(i)] = &r.integer[i]
 	}
+	return
+}
+
+func (c *CPU) SetRegister(reg int, val int32) {
+	if reg < 0 || reg > 32 {
+		panic("Invalid register index.")
+	}
+	c.registers.integer[reg] = val
 }
