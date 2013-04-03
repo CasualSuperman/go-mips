@@ -14,6 +14,8 @@ const (
 	itemComment
 )
 
+const eof = -1
+
 type item struct {
 	typ itemType
 	val string
@@ -29,17 +31,52 @@ type lexer struct {
 }
 
 func Lex(name, input string) *lexer {
-
+	l := lexer{name, input}
+	go l.run()
+	return &l
 }
 
+type stateFn func(*lexer) stateFn
+
 func (l *lexer) run() {
-	for state := lexText; state != nil; {
+	for state := lexCode; state != nil; {
 		state = state(l)
 	}
 	close(l.items)
 }
 
-type stateFn func(*lexer) stateFn
+// Emit the string currently selected between start and pos with type typ.
+func (l *lexer) emit(typ itemType) {
+	l.items <- item{typ, l.input[l.start:l.pos]}
+	l.start = l.pos
+}
+
+func (l *lexer) ignore() {
+	l.start = l.pos
+}
+
+func (l *lexer) backup() {
+	l.pos -= l.width
+}
+
+func (l *lexer) next() rune {
+	if l.pos >= len(l.input) {
+		l.width = 0
+		return eof
+	}
+
+	r, l.width = utf8.DecodeRuneInString(l.input[pos:])
+	l.pos += l.width
+	return r
+}
+
+func (l *lexer) peek() rune {
+	w := l.width
+	r := l.next()
+	l.backup()
+	l.width = w
+	return r
+}
 
 /*
 * Labels
