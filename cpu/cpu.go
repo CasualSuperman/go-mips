@@ -1,5 +1,7 @@
 package cpu
 
+import "unsafe"
+
 type CPU struct {
 	registers
 	memory struct {
@@ -30,12 +32,8 @@ func (c *CPU) Syscall() {
 }
 
 func (c *CPU) Tick() {
-	memoryOffset = c.hidden.pc >> 2
-	var command int32
-	for i := 0; i < 4; i++ {
-		command = command & c.memory.program[memoryOffset]
-		command = command << 8
-	}
+	memoryOffset := c.hidden.pc >> 2
+	command := *((*int32)(unsafe.Pointer(&c.memory.program[memoryOffset])))
 	pcChanged := c.Execute(command)
 	if !pcChanged {
 		c.hidden.pc += 4
@@ -43,5 +41,5 @@ func (c *CPU) Tick() {
 }
 
 func (c *CPU) Execute(command int32) bool {
-
+	return false
 }
