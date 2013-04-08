@@ -1,5 +1,10 @@
 package lexer
 
+import (
+	"fmt"
+	"unicode/utf8"
+)
+
 type itemType int
 
 const (
@@ -12,6 +17,7 @@ const (
 	itemRegister
 	itemString
 	itemComment
+	itemSyscall
 )
 
 const eof = -1
@@ -31,7 +37,7 @@ type lexer struct {
 }
 
 func Lex(name, input string) *lexer {
-	l := lexer{name, input}
+	l := lexer{name: name, input: input, items: make(chan item)}
 	go l.run()
 	return &l
 }
@@ -64,8 +70,8 @@ func (l *lexer) next() rune {
 		l.width = 0
 		return eof
 	}
-
-	r, l.width = utf8.DecodeRuneInString(l.input[pos:])
+	var r rune
+	r, l.width = utf8.DecodeRuneInString(l.input[l.pos:])
 	l.pos += l.width
 	return r
 }
@@ -76,6 +82,14 @@ func (l *lexer) peek() rune {
 	l.backup()
 	l.width = w
 	return r
+}
+
+func (l *lexer) errorf(format string, v ...interface{}) stateFn {
+	l.items <- item{
+		itemError,
+		fmt.Sprintf(format, v...),
+	}
+	return nil
 }
 
 /*
