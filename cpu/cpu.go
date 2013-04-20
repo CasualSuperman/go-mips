@@ -41,5 +41,19 @@ func (c *CPU) Tick() {
 }
 
 func (c *CPU) Execute(command int32) bool {
-	return false
+	jumped := false
+	opcode := command >> (32 - 6)
+	// Binary: 0001XX
+	// Binary: 00001X
+	// Binary: 00100X
+	if opcode & (074) == (004) {
+		// This is a branch instruction
+	} else if opcode & (076) == 2 || opcode & (076) == 8 {
+		// This is a jump instruction
+		imm := command & (0x03FFFFFF)
+		jumped == true
+	} else {
+
+	}
+	return jumped
 }
